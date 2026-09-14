@@ -22,7 +22,7 @@ Version 2 (Deeper Analysis and Personal Use) is next. The feature board in `docs
 
 ## Running it
 
-No build step and no dependencies. Double-click any `index.html`, or turn on GitHub Pages for the `main` branch and open `/app/` or `/releases/v1/`.
+No build step and no dependencies. Double-click any `index.html`, or use the live site: <https://ssshawnwang.github.io/truth-lens/>. The root of the site opens the current prototype in `app/`; frozen releases are at `/releases/v1/` and so on.
 
 ## Sample data
 
