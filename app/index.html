@@ -464,6 +464,77 @@
   .source-actions .btn-quiet { text-decoration: none; }
   .source-actions .dead { font-size: 13px; color: var(--bad); }
 
+  /* ---------- Source credibility signals ---------- */
+  .signals-note {
+    margin: 0 0 12px;
+    padding: 10px 14px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--surface-2);
+    font-size: 13.5px;
+    color: var(--ink-2);
+    max-width: 70ch;
+  }
+  .signals-note p { margin: 0; }
+  .signals-note p + p { margin-top: 4px; }
+  .signals-note strong { color: var(--ink); font-weight: 600; }
+  .signals-note details { margin-top: 6px; }
+  .signals-note summary { cursor: pointer; color: var(--accent); width: fit-content; }
+  .signals-note dl { display: grid; gap: 6px; margin: 8px 0 2px; }
+  .signals-note dt { color: var(--ink); font-weight: 600; }
+  .signals-note dd { margin: 0; }
+  .signals {
+    margin-top: 10px;
+    padding: 10px 12px 12px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--surface-2);
+    max-width: 62ch;
+  }
+  .signals-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 8px;
+    margin: 0 0 8px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .sample-tag {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 1px 6px;
+    border: 1px solid var(--line-strong);
+    border-radius: 4px;
+    color: var(--ink-2);
+  }
+  .signal-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px 16px;
+    margin: 0;
+  }
+  .signal dt { font-size: 12.5px; color: var(--ink-2); line-height: 1.3; }
+  .signal dd { margin: 3px 0 0; font-size: 13.5px; font-weight: 600; line-height: 1.35; }
+  .level {
+    display: inline-block;
+    padding: 1px 8px;
+    border: 1px solid var(--line-strong);
+    border-radius: 999px;
+    background: var(--surface);
+    font-size: 12.5px;
+  }
+  .not-assessed { font-style: italic; font-weight: 500; color: var(--ink-2); }
+  .level.not-assessed { border-style: dashed; background: transparent; }
+  .source .signals details { margin-top: 10px; }
+  .signals .why { margin: 6px 0 0; font-size: 14px; color: var(--ink-2); max-width: 60ch; }
+  @media (max-width: 480px) {
+    .signal-list { grid-template-columns: 1fr; }
+  }
+
   /* ---------- All-summaries mode ---------- */
   .all-list { display: grid; gap: 22px; }
   .all-item { padding-bottom: 22px; border-bottom: 1px solid var(--line); }
@@ -524,7 +595,7 @@
       <input id="q" type="search" placeholder="Search a topic by keyword, e.g. nuclear energy" autocomplete="off">
       <button class="btn btn-primary" type="submit">Search</button>
     </form>
-    <span class="pill" title="Version 1, Core Exploration. All topics, viewpoints and sources are sample data."><span class="pill-dot"></span>Prototype v1 · sample data</span>
+    <span class="pill" title="Version 1, Core Exploration. All topics, viewpoints, sources and credibility signals are sample data."><span class="pill-dot"></span>Prototype v1 · sample data</span>
   </div>
 </header>
 
@@ -535,7 +606,7 @@
 <main class="wrap" id="main"></main>
 
 <footer>
-  TruthLens prototype, Version 1 (Core Exploration). Every topic, viewpoint, summary and source on this page is sample data written for the prototype.
+  TruthLens prototype, Version 1 (Core Exploration). Every topic, viewpoint, summary, source and credibility signal on this page is sample data written for the prototype.
   Publishers are fictional and "Open original source" links go to a placeholder page.
 </footer>
 
@@ -557,11 +628,17 @@ const TOPICS = [
         summary: "This viewpoint holds that wind and solar alone cannot deliver reliable, always-on power, and that nuclear plants provide steady output with very low lifecycle emissions [1]. Supporters point to countries that decarbonized their electricity quickly by pairing hydro with nuclear [2], and argue that extending the lives of existing plants is one of the cheapest carbon cuts available [3].",
         sources: [
           { title: "Why firm power still matters in a renewable grid", publisher: "Civic Grid Journal", date: "2025-02-18", url: "https://example.com/civic-grid/firm-power", available: true,
-            excerpt: "On the coldest week of the year, wind output across the region fell to 9 percent of capacity for four consecutive days. The plants that kept the lights on were hydro and nuclear." },
+            excerpt: "On the coldest week of the year, wind output across the region fell to 9 percent of capacity for four consecutive days. The plants that kept the lights on were hydro and nuclear.",
+            credibility: { sourceType: "Industry publication", recognition: "Specialized", authority: "Medium", evidenceTransparency: "Moderate",
+              rationale: "A trade journal covering electricity grids: close to the topic, but reporting rather than original research. It gives a specific output figure without saying where the data comes from." } },
           { title: "How two countries cut power-sector emissions in under fifteen years", publisher: "Meridian Policy Review", date: "2024-11-03", url: "https://example.com/meridian/two-countries", available: true,
-            excerpt: "Both build-outs were completed on schedules that no recent project has matched, which supporters cite as proof of what is possible and critics cite as proof of what is no longer typical." },
+            excerpt: "Both build-outs were completed on schedules that no recent project has matched, which supporters cite as proof of what is possible and critics cite as proof of what is no longer typical.",
+            credibility: { sourceType: "Policy organization", recognition: "Established", authority: "Medium", evidenceTransparency: "Moderate",
+              rationale: "An established policy journal that analyzes policy rather than engineering. It compares two national cases and notes how supporters and critics read them, but the excerpt shows no data." } },
           { title: "The case for keeping existing reactors open", publisher: "Northfield Institute for Energy Research", date: "2025-05-30", url: "https://example.com/northfield/keep-open", available: true,
-            excerpt: "License extensions cost a fraction of new construction per megawatt-hour and avoid emissions that would otherwise be filled by gas in the near term." }
+            excerpt: "License extensions cost a fraction of new construction per megawatt-hour and avoid emissions that would otherwise be filled by gas in the near term.",
+            credibility: { sourceType: "Research organization", recognition: "Specialized", authority: "High", evidenceTransparency: "Moderate",
+              rationale: "An energy research institute writing within its field. The piece argues for one option and compares costs per megawatt-hour, but the excerpt gives no figures." } }
         ]
       },
       {
@@ -570,11 +647,17 @@ const TOPICS = [
         summary: "Critics argue that recent reactor projects have run years late and far over budget, while the cost of solar, wind and batteries has fallen sharply [1]. They contend that the same money would cut more emissions sooner if spent on renewables and grid storage [2]. Some analysts add that small modular reactors remain unproven at commercial scale [3].",
         sources: [
           { title: "Reactor cost overruns: a decade in review", publisher: "The Harbor Ledger", date: "2025-01-22", url: "https://example.com/harbor/overruns", available: true,
-            excerpt: "Of the seven large reactors that broke ground in the period we examined, none entered service within two years of its original date." },
+            excerpt: "Of the seven large reactors that broke ground in the period we examined, none entered service within two years of its original date.",
+            credibility: { sourceType: "News organization", recognition: "Established", authority: "Medium", evidenceTransparency: "Strong",
+              rationale: "A general news outlet rather than an energy specialist. It reviews a defined group of seven reactors and states what it measured, so the claim can be checked." } },
           { title: "Where a dollar cuts the most carbon", publisher: "Clearwater Data Desk", date: "2024-09-14", url: "https://example.com/clearwater/dollar-carbon", available: true,
-            excerpt: "Under most of the price scenarios we modeled, utility-scale solar paired with four-hour storage displaced more fossil generation per dollar than new nuclear by 2032." },
+            excerpt: "Under most of the price scenarios we modeled, utility-scale solar paired with four-hour storage displaced more fossil generation per dollar than new nuclear by 2032.",
+            credibility: { sourceType: "News organization", recognition: "Specialized", authority: "Medium", evidenceTransparency: "Strong",
+              rationale: "A data journalism team. It explains that the result comes from modeled price scenarios and holds under most of them, which shows readers the conditions behind the claim." } },
           { title: "Small modular reactors: promise and delay", publisher: "Meridian Policy Review", date: null, url: "https://example.com/meridian/smr", available: true,
-            excerpt: "The first commercial designs have been announced, re-scoped and, in one case, cancelled before pouring concrete." }
+            excerpt: "The first commercial designs have been announced, re-scoped and, in one case, cancelled before pouring concrete.",
+            credibility: { sourceType: "Policy organization", recognition: "Established", authority: "Medium", evidenceTransparency: "Limited",
+              rationale: "The same policy journal as another source on this topic. This piece has no publication date and describes project changes without naming the projects, so its evidence is hard to check." } }
         ]
       },
       {
@@ -583,9 +666,13 @@ const TOPICS = [
         summary: "This viewpoint accepts that modern reactors are statistically safe but stresses that most countries still have no operating permanent site for long-lived waste [1]. It also notes that public trust drops sharply after any incident, which can stall new projects for years [2].",
         sources: [
           { title: "Where does the waste go? The permanent repository problem", publisher: "Lantern Public Health Weekly", date: "2024-06-05", url: "https://example.com/lantern/repository", available: true,
-            excerpt: "Interim storage was designed as a bridge. In many places it has become the destination." },
+            excerpt: "Interim storage was designed as a bridge. In many places it has become the destination.",
+            credibility: { sourceType: "News organization", recognition: "Limited", authority: "Limited", evidenceTransparency: "Limited",
+              rationale: "A small weekly focused on public health. Long-term waste storage is outside its main subject, and the excerpt offers a characterization rather than evidence." } },
           { title: "Public trust after nuclear incidents: a survey of twelve countries", publisher: "Hollis School of Public Affairs", date: "2023-12-11", url: "https://example.com/hollis/trust-survey", available: false,
-            excerpt: "Support for new construction fell by an average of 19 points in the year after each incident and took roughly a decade to recover." }
+            excerpt: "Support for new construction fell by an average of 19 points in the year after each incident and took roughly a decade to recover.",
+            credibility: { sourceType: "Academic or educational institution", recognition: "Established", authority: "High", evidenceTransparency: "Strong",
+              rationale: "A school of public affairs reporting a twelve-country survey with specific figures. The original is currently unavailable, so its full method cannot be checked here." } }
         ]
       }
     ]
@@ -601,11 +688,17 @@ const TOPICS = [
         summary: "Supporters cite studies where output per employee held steady or rose after teams went remote, with fewer interruptions and no commute [1]. They also point to lower turnover among remote-eligible staff [2] and argue that most measured drops in productivity trace to poor management rather than location [3].",
         sources: [
           { title: "Output per employee before and after the shift to remote", publisher: "Workplace Signal", date: "2025-04-08", url: "https://example.com/signal/output", available: true,
-            excerpt: "Across the 40 teams we tracked, tickets closed per person rose 6 percent in the first year of remote work and stayed flat thereafter." },
+            excerpt: "Across the 40 teams we tracked, tickets closed per person rose 6 percent in the first year of remote work and stayed flat thereafter.",
+            credibility: { sourceType: "Industry publication", recognition: "Specialized", authority: "Medium", evidenceTransparency: "Strong",
+              rationale: "A workplace trade publication. It states its sample (40 teams), its measure (tickets closed) and the time frame, though that measure covers only one kind of work." } },
           { title: "Retention in hybrid-eligible roles", publisher: "Redwood Labor Observatory", date: "2024-10-21", url: "https://example.com/redwood/retention", available: true,
-            excerpt: "Voluntary departures were roughly a third lower among employees allowed at least two remote days per week." },
+            excerpt: "Voluntary departures were roughly a third lower among employees allowed at least two remote days per week.",
+            credibility: { sourceType: "Research organization", recognition: "Specialized", authority: "High", evidenceTransparency: "Moderate",
+              rationale: "A labor research group, so retention is within its field. It gives an approximate effect, but the excerpt does not describe the sample or how departures were counted." } },
           { title: "It's the management, not the location", publisher: "The Foundry Report", date: "2025-03-02", url: "https://example.com/foundry/management", available: true,
-            excerpt: "Teams with clear written goals performed about the same in either setting. Teams without them performed worse in both." }
+            excerpt: "Teams with clear written goals performed about the same in either setting. Teams without them performed worse in both.",
+            credibility: { sourceType: "Opinion or commentary source", recognition: "Limited", authority: "Limited", evidenceTransparency: "Limited",
+              rationale: "A commentary source whose headline states its conclusion. The excerpt summarizes findings without figures or a described method." } }
         ]
       },
       {
@@ -614,9 +707,13 @@ const TOPICS = [
         summary: "This viewpoint argues that junior employees learn less when they cannot observe senior colleagues day to day [1], and that communication across teams narrows over time as people talk mainly to contacts they already have [2].",
         sources: [
           { title: "The apprenticeship gap in remote teams", publisher: "The Foundry Report", date: "2024-08-19", url: "https://example.com/foundry/apprenticeship", available: true,
-            excerpt: "New hires in fully remote teams received about half as much unscheduled feedback in their first six months." },
+            excerpt: "New hires in fully remote teams received about half as much unscheduled feedback in their first six months.",
+            credibility: { sourceType: "Opinion or commentary source", recognition: "Limited", authority: "Limited", evidenceTransparency: "Moderate",
+              rationale: "A commentary source rather than a research body. It gives a comparison and a time frame, but not how feedback was measured or how many new hires were included." } },
           { title: "How communication networks narrowed after going remote", publisher: "Workplace Signal", date: "2023-11-30", url: "https://example.com/signal/networks", available: true,
-            excerpt: "Messages between different departments fell by a quarter, while messages within existing teams rose." }
+            excerpt: "Messages between different departments fell by a quarter, while messages within existing teams rose.",
+            credibility: { sourceType: "Industry publication", recognition: "Specialized", authority: "Medium", evidenceTransparency: "Moderate",
+              rationale: "A workplace trade publication describing message patterns. It gives the size of the change, but the excerpt does not say which organizations or how many people were studied." } }
         ]
       }
     ]
@@ -632,9 +729,13 @@ const TOPICS = [
         summary: "This viewpoint reports that schools with full-day phone restrictions saw fewer classroom disruptions and modest gains in test scores, with the largest gains among lower-performing students [1]. Teachers surveyed also described less bullying during breaks [2].",
         sources: [
           { title: "Classroom focus after a district-wide phone policy", publisher: "Open Classroom Quarterly", date: "2025-02-27", url: "https://example.com/classroom/focus", available: true,
-            excerpt: "Teachers logged 40 percent fewer disruptions per class period in the semester after the policy took effect." },
+            excerpt: "Teachers logged 40 percent fewer disruptions per class period in the semester after the policy took effect.",
+            credibility: { sourceType: "Professional organization", recognition: "Specialized", authority: "High", evidenceTransparency: "Moderate",
+              rationale: "An educators' journal writing about classroom practice, its own field. It reports a measured change over a semester, but the figures come from teachers' own logs in one district." } },
           { title: "Teacher survey: what changed after phones were locked away", publisher: "The Beacon Tribune", date: "2024-09-09", url: "https://example.com/beacon/survey", available: false,
-            excerpt: "Most respondents said hallway conflicts became easier to defuse because there was no audience recording them." }
+            excerpt: "Most respondents said hallway conflicts became easier to defuse because there was no audience recording them.",
+            credibility: { sourceType: "News organization", recognition: "Established", authority: "Medium", evidenceTransparency: "Limited",
+              rationale: "A general newspaper reporting a teacher survey. The excerpt gives no response numbers and the original is unavailable, so the survey method cannot be checked." } }
         ]
       }
     ]
@@ -650,9 +751,13 @@ const TOPICS = [
         summary: "Pilot programs reported that most participating companies kept revenue flat or slightly up while employees reported lower burnout and better sleep [1]. Many firms chose to keep the schedule after the trial ended [2].",
         sources: [
           { title: "Results from a six-month four-day week pilot", publisher: "Redwood Labor Observatory", date: "2024-12-02", url: "https://example.com/redwood/pilot", available: true,
-            excerpt: "Revenue across the 33 participating companies rose 1.4 percent over the trial period, in line with the prior year." },
+            excerpt: "Revenue across the 33 participating companies rose 1.4 percent over the trial period, in line with the prior year.",
+            credibility: { sourceType: "Research organization", recognition: "Specialized", authority: "High", evidenceTransparency: "Strong",
+              rationale: "A labor research group reporting a defined pilot: 33 companies over six months, with revenue compared against the prior year." } },
           { title: "Why most pilot companies didn't go back", publisher: "Workplace Signal", date: "2025-01-15", url: "https://example.com/signal/didnt-go-back", available: true,
-            excerpt: "Nine in ten companies said they would continue, most citing recruiting as the main reason." }
+            excerpt: "Nine in ten companies said they would continue, most citing recruiting as the main reason.",
+            credibility: { sourceType: "Industry publication", recognition: "Specialized", authority: "Medium", evidenceTransparency: "Moderate",
+              rationale: "A workplace trade publication reporting what pilot companies said about continuing. These are stated intentions, not measured outcomes." } }
         ]
       },
       {
@@ -661,9 +766,13 @@ const TOPICS = [
         summary: "Skeptics note that companies volunteering for pilots are already well run and are not representative of most workplaces [1]. They add that customer-facing and shift-based roles cannot compress hours without hiring more staff [2].",
         sources: [
           { title: "Who signs up for a four-day week trial?", publisher: "Clearwater Data Desk", date: "2025-03-20", url: "https://example.com/clearwater/who-signs-up", available: true,
-            excerpt: "Participating firms were smaller, younger and more likely to be in knowledge work than the economy as a whole." },
+            excerpt: "Participating firms were smaller, younger and more likely to be in knowledge work than the economy as a whole.",
+            credibility: { sourceType: "News organization", recognition: "Specialized", authority: "Medium", evidenceTransparency: "Strong",
+              rationale: "A data journalism team comparing trial participants with the wider economy by size, age and industry, which makes clear what was compared." } },
           { title: "Shift work and the four-day week", publisher: "The Harbor Ledger", date: "2024-07-11", url: "https://example.com/harbor/shift-work", available: false,
-            excerpt: "A hospital cannot close on Fridays. Compressing hours for nurses meant hiring, not scheduling." }
+            excerpt: "A hospital cannot close on Fridays. Compressing hours for nurses meant hiring, not scheduling.",
+            credibility: { sourceType: "News organization", recognition: "Established", authority: "Medium", evidenceTransparency: "Limited",
+              rationale: "A general news outlet using a hospital example to make its point. The excerpt is illustrative rather than measured, and the original is unavailable." } }
         ]
       }
     ]
@@ -679,9 +788,13 @@ const TOPICS = [
         summary: "Proponents argue that structured algorithmic screening applies the same criteria to every applicant, removing inconsistent human judgment from the first pass [1], and that it cuts time-to-hire substantially for high-volume roles [2].",
         sources: [
           { title: "Consistency in algorithmic candidate screening", publisher: "Clearwater Data Desk", date: "2025-05-06", url: "https://example.com/clearwater/consistency", available: true,
-            excerpt: "Two human screeners agreed on a candidate's shortlist status about 60 percent of the time. The model agreed with itself, by definition, every time." },
+            excerpt: "Two human screeners agreed on a candidate's shortlist status about 60 percent of the time. The model agreed with itself, by definition, every time.",
+            credibility: { sourceType: "News organization", recognition: "Specialized", authority: "Medium", evidenceTransparency: "Moderate",
+              rationale: "A data journalism team comparing how often human screeners and a model agree. It gives the human agreement rate, but not how many applications were compared." } },
           { title: "Time-to-hire in high-volume recruiting", publisher: "Workplace Signal", date: "2024-11-18", url: "https://example.com/signal/time-to-hire", available: true,
-            excerpt: "Warehouse and call-center employers reported median time-to-hire falling from 23 days to 9 after adopting automated screening." }
+            excerpt: "Warehouse and call-center employers reported median time-to-hire falling from 23 days to 9 after adopting automated screening.",
+            credibility: { sourceType: "Industry publication", recognition: "Specialized", authority: "Medium", evidenceTransparency: "Moderate",
+              rationale: "A workplace trade publication citing hiring times reported by employers. It gives before-and-after medians, but the figures come from the employers themselves." } }
         ]
       },
       {
@@ -690,11 +803,17 @@ const TOPICS = [
         summary: "Critics point to systems trained on past hiring decisions that learned to penalize certain schools, employment gaps, or word choices associated with particular groups [1]. Because one model screens thousands of applicants, a small bias affects many people at once [2]. Several jurisdictions now require audits of automated hiring tools [3].",
         sources: [
           { title: "When the training data is the problem", publisher: "Meridian Policy Review", date: "2024-04-23", url: "https://example.com/meridian/training-data", available: true,
-            excerpt: "The model had never been told an applicant's gender. It had learned that the word 'women's' in a résumé predicted rejection." },
+            excerpt: "The model had never been told an applicant's gender. It had learned that the word 'women's' in a résumé predicted rejection.",
+            credibility: { sourceType: "Policy organization", recognition: "Established", authority: "Medium", evidenceTransparency: "Moderate",
+              rationale: "An established policy journal describing a specific case of learned bias. It explains how the bias arose, but the excerpt does not name the system or employer involved." } },
           { title: "Scale changes the stakes of a biased filter", publisher: "Hollis School of Public Affairs", date: "2025-02-10", url: "https://example.com/hollis/scale", available: true,
-            excerpt: "A biased recruiter affects the candidates they see. A biased model affects every candidate the company sees." },
+            excerpt: "A biased recruiter affects the candidates they see. A biased model affects every candidate the company sees.",
+            credibility: { sourceType: "Academic or educational institution", recognition: "Established", authority: "High", evidenceTransparency: "Limited",
+              rationale: "A school of public affairs writing within its field. This piece makes a conceptual argument, and the excerpt contains no data." } },
           { title: "Audit requirements for automated hiring tools: a comparison", publisher: "The Harbor Ledger", date: "2025-06-30", url: "https://example.com/harbor/audits", available: true,
-            excerpt: "Three of the five jurisdictions surveyed now require annual bias audits, though only one publishes the results." }
+            excerpt: "Three of the five jurisdictions surveyed now require annual bias audits, though only one publishes the results.",
+            credibility: { sourceType: "News organization", recognition: "Established", authority: "Medium", evidenceTransparency: "Strong",
+              rationale: "A general news outlet comparing rules across five jurisdictions. It states how many require audits and how many publish the results." } }
         ]
       },
       {
@@ -703,7 +822,9 @@ const TOPICS = [
         summary: "This viewpoint argues that whether screening is human or automated, applicants should know which criteria are used and be able to contest a rejection [1].",
         sources: [
           { title: "The right to an explanation in hiring", publisher: "Open Policy Forum", date: "2025-01-28", url: "https://example.com/openpolicy/explanation", available: true,
-            excerpt: "Most applicants never learn why they were rejected. That was true before software and it is true now." }
+            excerpt: "Most applicants never learn why they were rejected. That was true before software and it is true now.",
+            credibility: { sourceType: "Opinion or commentary source", recognition: "Not assessed", authority: "Not assessed", evidenceTransparency: "Limited",
+              rationale: "The sample data has no profile of this publisher, so recognition and authority are not assessed. The excerpt states a position without citing evidence." } }
         ]
       }
     ]
@@ -712,6 +833,20 @@ const TOPICS = [
 
 const SAMPLE_QUERIES = ["nuclear energy", "remote work", "phone bans in schools", "four-day week", "AI hiring"];
 const LIMITED_EVIDENCE_MAX = 3; /* topic is "limited" when this many or fewer sources are available */
+
+/* Source credibility signals: sample metadata describing each source's profile, not its accuracy.
+   Only these labels are shown; a missing or unrecognized value shows as "Not assessed". */
+const NOT_ASSESSED = "Not assessed";
+const SIGNAL_FIELDS = [
+  { key: "sourceType", label: "Source type",
+    meaning: "The kind of organization or outlet that published it." },
+  { key: "recognition", label: "Recognition", levels: ["Established", "Specialized", "Limited", NOT_ASSESSED],
+    meaning: "How widely known the publisher is. “Specialized” means known mainly within its field." },
+  { key: "authority", label: "Subject-matter authority", levels: ["High", "Medium", "Limited", NOT_ASSESSED],
+    meaning: "How closely the topic matches the publisher’s expertise." },
+  { key: "evidenceTransparency", label: "Evidence transparency", levels: ["Strong", "Moderate", "Limited", NOT_ASSESSED],
+    meaning: "How clearly the source shows its data, methods or references." }
+];
 
 /* ---------- state ---------- */
 const state = { query: "", topic: null, selectedId: null, mode: "single" };
@@ -755,6 +890,26 @@ function topicStats(topic) {
 }
 function renderSummary(text) {
   return esc(text).replace(/\[(\d+)\]/g, (_, n) => `<button class="cite" type="button" data-cite="${n}" aria-label="Go to source ${n}">${n}</button>`);
+}
+function credibilityOf(source) {
+  const raw = source && source.credibility && typeof source.credibility === "object" ? source.credibility : {};
+  const signals = {};
+  for (const f of SIGNAL_FIELDS) {
+    const value = typeof raw[f.key] === "string" ? raw[f.key].trim() : "";
+    signals[f.key] = value && (!f.levels || f.levels.includes(value)) ? value : NOT_ASSESSED;
+  }
+  signals.rationale = typeof raw.rationale === "string" ? raw.rationale.trim() : "";
+  return signals;
+}
+function warnOnUnknownSignals() {
+  for (const t of TOPICS) for (const v of t.viewpoints) v.sources.forEach((s, i) => {
+    for (const f of SIGNAL_FIELDS) {
+      const value = s.credibility ? s.credibility[f.key] : undefined;
+      if (f.levels && typeof value === "string" && value.trim() && !f.levels.includes(value.trim())) {
+        console.warn(`TruthLens sample data: source ${i + 1} of "${v.id}" has an unknown ${f.label.toLowerCase()} "${value}". It is shown as "${NOT_ASSESSED}".`);
+      }
+    }
+  });
 }
 const WARN_ICON = `<svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 2.5 18 17H2L10 2.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M10 8v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="10" cy="14.4" r="1" fill="currentColor"/></svg>`;
 
@@ -829,6 +984,7 @@ function renderSingle(t) {
       <h3>Sources behind this viewpoint</h3>
       <span class="legend">${vp.sources.length} retrieved · ${avail} available</span>
     </div>
+    ${renderSignalsNote()}
     <ol class="source-list">
       ${vp.sources.map((s, i) => renderSource(s, i + 1)).join("")}
     </ol>`;
@@ -842,6 +998,7 @@ function renderSource(s, n) {
       <div>
         <p class="source-title">${esc(s.title)}${s.available ? "" : `<span class="badge">Unavailable</span>`}</p>
         <p class="source-meta">${esc(s.publisher)} · ${date ? `<span class="date">${date}</span>` : `<span class="nodate">Date unavailable</span>`}</p>
+        ${renderSignals(s, n)}
         ${s.excerpt ? `
         <details>
           <summary>Read excerpt</summary>
@@ -854,6 +1011,41 @@ function renderSource(s, n) {
         </div>
       </div>
     </li>`;
+}
+
+function renderSignals(s, n) {
+  const signals = credibilityOf(s);
+  const headId = `src-${n}-signals`;
+  return `
+        <div class="signals" role="group" aria-labelledby="${headId}">
+          <p class="signals-head" id="${headId}">Source credibility signals <span class="sample-tag">Sample data</span></p>
+          <dl class="signal-list">
+            ${SIGNAL_FIELDS.map(f => {
+              const value = signals[f.key];
+              const classes = [f.levels ? "level" : "", value === NOT_ASSESSED ? "not-assessed" : ""].join(" ").trim();
+              return `<div class="signal"><dt>${esc(f.label)}</dt><dd>${classes ? `<span class="${classes}">${esc(value)}</span>` : esc(value)}</dd></div>`;
+            }).join("")}
+          </dl>
+          <details>
+            <summary>Why these signals?</summary>
+            <p class="why">${signals.rationale ? esc(signals.rationale) : `${NOT_ASSESSED}. The sample data has no rationale for this source.`}</p>
+          </details>
+        </div>`;
+}
+
+function renderSignalsNote() {
+  return `
+    <div class="signals-note">
+      <p><strong>Source credibility signals</strong> describe each source’s type, how widely its publisher is recognized, its subject-matter authority and how openly it shows its evidence.</p>
+      <p>These are sample credibility signals for the prototype. They describe the source profile and do not prove that every claim is accurate.</p>
+      <details>
+        <summary>What the signals mean</summary>
+        <dl>
+          ${SIGNAL_FIELDS.map(f => `<div><dt>${esc(f.label)}</dt><dd>${esc(f.meaning)}${f.levels ? ` Values: ${esc(f.levels.join(", "))}.` : ""}</dd></div>`).join("")}
+          <div><dt>${NOT_ASSESSED}</dt><dd>The sample data has no information for that signal.</dd></div>
+        </dl>
+      </details>
+    </div>`;
 }
 
 function renderAll(t) {
@@ -947,6 +1139,7 @@ document.addEventListener("click", e => {
 });
 
 /* ---------- first paint: open with a worked example ---------- */
+warnOnUnknownSignals();
 search(SAMPLE_QUERIES[0]);
 </script>
 </body>
