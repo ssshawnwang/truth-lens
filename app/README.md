@@ -81,6 +81,24 @@ Limits worth keeping in mind:
   detects disagreement by reading the sources.
 - A topic with one viewpoint shows no conflicts, which is the honest result rather than a filler.
 
+## Version 2: better search
+
+Three more stories from the Version 2 row:
+
+| Story | Where you see it | How it works |
+|---|---|---|
+| Full-question search | Type a whole question, such as "should schools ban phones?" | Keywords are matched as phrases, as before, and also word by word. Filler words are dropped and a trailing "s" is trimmed, so "phones" matches "phone" |
+| Keyword disambiguation | Search `work` and the page asks which topic you meant | Shown when a second topic scores at least half as well as the first and nothing matched a keyword outright |
+| Filters by publisher or date | Two menus above the source list | Options come from that viewpoint's own sources: its publishers, the years present, and "No date" when a source is undated |
+
+Things worth knowing:
+
+- Filtering changes only which sources are listed. Citation numbers keep their original positions,
+  so `[2]` is the same source with or without a filter, and the uncertainty notices and the
+  "N retrieved · M available" count still describe the whole viewpoint.
+- Clicking a citation whose source is hidden by a filter clears the filters and jumps to it.
+- Filters reset when you search again or switch viewpoint.
+
 ## Demo script
 
 Each sample topic is built to show a different state:
@@ -95,6 +113,9 @@ Each sample topic is built to show a different state:
 | anything else           | No-results state with a way back                                              |
 
 Keyword matching is loose: `nuclear`, `reactors`, `wfh`, `4-day`, `resume screening` all resolve.
+Whole questions resolve too, for example `should schools ban phones?` or `is nuclear power safe?`,
+and `AI` on its own now reaches AI in hiring. `work` is ambiguous on purpose: it matches remote work
+and the four-day week, so the page asks which one you meant.
 
 Credibility signals vary on purpose: `remote work` includes a commentary source marked Limited for
 recognition, authority and evidence transparency; the undated source under `nuclear energy` has
@@ -135,6 +156,10 @@ unknown label is reported as a console warning when the page loads.
 Notices trigger automatically: one viewpoint, or 3 or fewer reachable sources
 (`LIMITED_EVIDENCE_MAX` in the script).
 
+Search matches `keywords` as phrases and word by word, so give a topic the distinctive words people
+would type; filler words listed in `SEARCH_STOP_WORDS` are ignored. Two topics that share wording
+end up in the "which one did you mean" chooser rather than one quietly winning.
+
 `conflicts` is optional. Each entry needs `between` with exactly two different viewpoint ids from
 the same topic and a non-empty `point`; `note` is optional. Entries that do not match are ignored,
 so a typo in an id hides that conflict instead of breaking the page. The "Research / Reporting /
@@ -143,8 +168,8 @@ Opinion" label follows `credibility.sourceType`, so add new source types to
 
 ## Still out of scope (rest of the Version 2 row)
 
-Full-question search, URL input, keyword disambiguation, filters by date or publisher, subtopics,
-expanded reasoning, "last updated", bookmarks, sharing, reporting, recent searches.
+URL input, subtopics, expanded reasoning, "last updated", bookmarks, sharing, reporting,
+recent searches.
 
 Bookmarks, sharing and recent searches need browser storage or URL state, which the team has not
 decided on yet.
