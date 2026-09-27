@@ -958,22 +958,53 @@ function esc(s) {
 function normalize(s) {
   return s.toLowerCase().replace(/[^a-z0-9\s-]/g, " ").replace(/\s+/g, " ").trim();
 }
-function findTopic(q) {
+/* Full-question search: a typed question is matched both as phrases (as before) and word by word,
+   so "should schools ban phones?" reaches the phone-bans topic. Words that carry no topic meaning
+   are dropped, and a trailing "s" is trimmed so "phones" matches "phone". */
+const SEARCH_STOP_WORDS = new Set(["a", "about", "an", "and", "are", "be", "by", "can", "could",
+  "did", "do", "does", "for", "from", "how", "in", "is", "it", "me", "of", "on", "or", "should",
+  "than", "that", "the", "their", "them", "there", "these", "this", "those", "to", "us", "versus",
+  "vs", "was", "were", "what", "when", "which", "who", "why", "will", "with", "without", "would",
+  "you", "your"]);
+const TOKEN_WEIGHT = 6;
+function searchStem(word) { return word.length > 3 && word.endsWith("s") ? word.slice(0, -1) : word; }
+function searchTokens(text) {
+  return normalize(text).split(" ").filter(w => w && !SEARCH_STOP_WORDS.has(w)).map(searchStem);
+}
+/* Normalized keywords and tokens per topic, worked out once instead of on every search. */
+const topicIndex = new WeakMap();
+function indexOf(topic) {
+  let entry = topicIndex.get(topic);
+  if (!entry) {
+    const keywords = Array.isArray(topic.keywords) ? topic.keywords.filter(k => typeof k === "string") : [];
+    entry = {
+      keywords: keywords.map(normalize).filter(Boolean),
+      tokens: new Set([...searchTokens(topic.title || ""), ...keywords.flatMap(k => searchTokens(k))])
+    };
+    topicIndex.set(topic, entry);
+  }
+  return entry;
+}
+function rankTopics(q) {
   const nq = normalize(q);
-  if (!nq) return null;
+  if (!nq) return [];
   const padded = ` ${nq} `;
-  let best = null, bestScore = 0;
-  for (const t of TOPICS) {
-    let score = 0;
-    for (const k of t.keywords) {
-      const nk = normalize(k);
-      if (nq === nk) score += 100;
-      else if (padded.includes(` ${nk} `)) score += 10 + nk.length;
+  const tokens = [...new Set(searchTokens(q))];
+  return TOPICS.map(topic => {
+    const entry = indexOf(topic);
+    let score = 0, phrase = 0;
+    for (const nk of entry.keywords) {
+      if (nq === nk) { score += 100; phrase = Math.max(phrase, 100); }
+      else if (padded.includes(` ${nk} `)) { score += 10 + nk.length; phrase = Math.max(phrase, 10 + nk.length); }
       else if (nq.length >= 4 && nk.includes(nq)) score += nq.length;
     }
-    if (score > bestScore) { best = t; bestScore = score; }
-  }
-  return best;
+    const matched = tokens.filter(w => entry.tokens.has(w)).length;
+    return { topic, score: score + matched * TOKEN_WEIGHT, phrase, matched };
+  }).filter(r => r.score > 0).sort((a, b) => b.score - a.score);
+}
+function findTopic(q) {
+  const ranked = rankTopics(q);
+  return ranked.length ? ranked[0].topic : null;
 }
 function fmtDate(iso) {
   if (!iso) return null;
