@@ -308,6 +308,14 @@
     color: var(--warn);
     margin-top: 4px;
   }
+  .rail-item .rail-count {
+    display: block;
+    font-family: var(--sans);
+    font-size: 12.5px;
+    font-weight: 400;
+    color: var(--ink-2);
+    margin-top: 4px;
+  }
 
   /* ---------- Detail pane ---------- */
   .detail {
@@ -947,6 +955,7 @@ function render() {
           ${t.viewpoints.map(v => `
             <li><button class="rail-item" type="button" data-vp="${v.id}" aria-current="${v.id === state.selectedId}">
               ${esc(v.title)}
+              <span class="rail-count">${v.sources.length} source${v.sources.length === 1 ? "" : "s"} · ${availableCount(v)} available</span>
               ${availableCount(v) <= 1 ? `<small>Rests on ${availableCount(v) === 0 ? "no" : "a single"} available source</small>` : ""}
             </button></li>`).join("")}
         </ul>
