@@ -585,12 +585,23 @@
   }
 
   /* ---------- All-summaries mode ---------- */
-  .all-list { display: grid; gap: 22px; }
-  .all-item { padding-bottom: 22px; border-bottom: 1px solid var(--line); }
-  .all-item:last-child { border-bottom: 0; padding-bottom: 0; }
-  .all-item h2 { font-size: 22px; margin-bottom: 10px; }
+  .all-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+    gap: 18px;
+    align-items: start;
+  }
+  .all-item {
+    padding: 16px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    min-width: 0;
+  }
+  .all-item h2 { font-size: 20px; margin-bottom: 10px; }
   .all-item .summary { padding: 14px 16px; }
-  .all-item .browse { margin-top: 10px; }
+  .all-item .evidence-mix { margin-top: 12px; }
+  .all-item .all-counts { margin: 8px 0 0; font-size: 13px; color: var(--ink-2); }
+  .all-item .browse { margin-top: 12px; }
 
   /* ---------- Empty state ---------- */
   .empty {
@@ -1216,6 +1227,8 @@ function renderAll(t) {
           <div class="summary-head"><p class="eyebrow">AI summary</p></div>
           <p data-vp="${v.id}">${renderSummary(v.summary)}</p>
         </div>
+        <p class="evidence-mix"><strong>Source material:</strong> ${esc(evidenceMix(v))}</p>
+        <p class="all-counts">${availableCount(v)} of ${v.sources.length} source${v.sources.length === 1 ? "" : "s"} available</p>
         <button class="btn btn-quiet browse" type="button" data-browse="${v.id}">Browse ${v.sources.length} source${v.sources.length === 1 ? "" : "s"} →</button>
       </article>`).join("")}
   </div>`;
