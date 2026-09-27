@@ -622,6 +622,27 @@
   }
   .empty p { margin: 0 0 16px; color: var(--ink-2); }
   .empty .chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+  .choice-list { display: grid; gap: 8px; justify-items: center; }
+  .topic-choice {
+    width: 100%;
+    max-width: 420px;
+    text-align: left;
+    background: var(--surface);
+    border: 1px solid var(--line-strong);
+    border-radius: 6px;
+    padding: 10px 14px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 600;
+  }
+  .topic-choice:hover { border-color: var(--accent); }
+  .topic-choice .choice-meta {
+    display: block;
+    font-size: 12.5px;
+    font-weight: 400;
+    color: var(--ink-2);
+    margin-top: 2px;
+  }
 
   footer {
     max-width: 1120px;
@@ -946,7 +967,7 @@ const MATERIAL_BY_SOURCE_TYPE = {
 const MATERIAL_ORDER = ["Research", "Reporting", "Opinion", NOT_ASSESSED];
 
 /* ---------- state ---------- */
-const state = { query: "", topic: null, selectedId: null, mode: "single" };
+const state = { query: "", topic: null, selectedId: null, mode: "single", choices: [] };
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const main = document.getElementById("main");
 const input = document.getElementById("q");
@@ -1076,7 +1097,7 @@ const WARN_ICON = `<svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path
 
 /* ---------- rendering ---------- */
 function render() {
-  if (!state.topic) { renderEmpty(); return; }
+  if (!state.topic) { state.choices.length ? renderChoices() : renderEmpty(); return; }
   const t = state.topic;
   const stats = topicStats(t);
   const notices = [];
@@ -1276,6 +1297,22 @@ function renderEmpty() {
   document.title = "TruthLens";
 }
 
+function renderChoices() {
+  main.innerHTML = `
+    <section class="empty" role="status">
+      <p class="eyebrow">More than one topic matches</p>
+      <h2>Which one did you mean by “${esc(state.query)}”?</h2>
+      <p>Your words match these sample topics about equally well. Pick one, or search again with more detail.</p>
+      <div class="choice-list">
+        ${state.choices.map(t => `
+          <button class="topic-choice" type="button" data-topic="${esc(t.id)}">${esc(t.title)}
+            <span class="choice-meta">${t.viewpoints.length} viewpoint${t.viewpoints.length === 1 ? "" : "s"}</span>
+          </button>`).join("")}
+      </div>
+    </section>`;
+  document.title = `Which topic? · TruthLens`;
+}
+
 function renderSearching(q) {
   main.innerHTML = `<div class="status">Searching sources for “${esc(q)}”…</div>`;
 }
@@ -1288,13 +1325,29 @@ function search(q) {
   input.value = query;
   renderSearching(query);
   window.setTimeout(() => {
-    const topic = findTopic(query);
+    const ranked = rankTopics(query);
+    const top = ranked[0];
+    /* Ask which topic was meant when a second topic scores nearly as well and nothing
+       matched a keyword outright. */
+    const ambiguous = !!top && top.phrase < 100 && !!ranked[1] && ranked[1].score >= top.score * 0.5;
+    state.choices = ambiguous ? ranked.slice(0, 4).map(r => r.topic) : [];
+    const topic = ambiguous ? null : (top ? top.topic : null);
     state.topic = topic;
-    state.selectedId = topic ? topic.viewpoints[0].id : null;
+    state.selectedId = topic && topic.viewpoints[0] ? topic.viewpoints[0].id : null;
     state.mode = "single";
     render();
     if (!topic) main.querySelector(".empty")?.scrollIntoView({ block: "nearest" });
   }, reduceMotion ? 0 : 350);
+}
+
+function selectTopic(id) {
+  const topic = TOPICS.find(t => t.id === id);
+  if (!topic) return;
+  state.topic = topic;
+  state.choices = [];
+  state.selectedId = topic.viewpoints[0] ? topic.viewpoints[0].id : null;
+  state.mode = "single";
+  render();
 }
 
 function goToSource(n) {
@@ -1318,6 +1371,9 @@ SAMPLE_QUERIES.forEach(q => {
 document.addEventListener("click", e => {
   const chip = e.target.closest("[data-q]");
   if (chip) { search(chip.dataset.q); return; }
+
+  const choice = e.target.closest("[data-topic]");
+  if (choice) { selectTopic(choice.dataset.topic); return; }
 
   const rail = e.target.closest("[data-vp].rail-item");
   if (rail) { state.selectedId = rail.dataset.vp; state.mode = "single"; render(); return; }
