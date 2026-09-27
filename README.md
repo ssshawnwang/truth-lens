@@ -10,7 +10,7 @@ Team 2 · 95-874 Agile Methods · CMU · Fall 2026
 |---|---|
 | `app/` | The living prototype. Always the latest sprint's work. Open `app/index.html` in a browser. |
 | `releases/` | Frozen copies of each release, never edited after tagging. |
-| `docs/` | Class artifacts: feature decomposition, feature board, sprint notes. |
+| `docs/` | Class artifacts. Sprint notes are in `docs/sprints/`; the feature decomposition and feature board live on the team's Mural board. |
 
 ## Releases
 
@@ -18,7 +18,9 @@ Team 2 · 95-874 Agile Methods · CMU · Fall 2026
 |---|---|---|---|
 | Version 1, Core Exploration | `v1.0` | Search a topic, read viewpoint summaries with citations, browse the sources behind each, see uncertainty notices | `releases/v1/index.html` |
 
-Version 2 (Deeper Analysis and Personal Use) is next. The feature board in `docs/` lists its stories.
+Version 2 (Deeper Analysis and Personal Use) is in progress in `app/`. `docs/sprints/sprint-2.md`
+tracks what is delivered and what is left; "Version 2: deeper analysis" in `app/README.md` describes
+the parts you can already click.
 
 ## Running it
 
