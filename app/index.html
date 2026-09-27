@@ -439,6 +439,27 @@
   }
   .sources-head .legend { font-size: 12.5px; color: var(--ink-3); }
 
+  .source-filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    gap: 10px 14px;
+    margin: 0 0 12px;
+  }
+  .filter-field { display: grid; gap: 3px; font-size: 12.5px; color: var(--ink-2); }
+  .filter-field select {
+    font: inherit;
+    font-size: 13.5px;
+    color: var(--ink);
+    background: var(--surface);
+    border: 1px solid var(--line-strong);
+    border-radius: 6px;
+    padding: 5px 8px;
+    max-width: 230px;
+  }
+  .filter-count { align-self: center; font-size: 13px; color: var(--ink-2); }
+  .filter-empty { margin: 14px 0 0; font-size: 14px; color: var(--ink-2); }
+
   .source-list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
   .source {
     display: grid;
@@ -967,7 +988,7 @@ const MATERIAL_BY_SOURCE_TYPE = {
 const MATERIAL_ORDER = ["Research", "Reporting", "Opinion", NOT_ASSESSED];
 
 /* ---------- state ---------- */
-const state = { query: "", topic: null, selectedId: null, mode: "single", choices: [] };
+const state = { query: "", topic: null, selectedId: null, mode: "single", choices: [], filters: { publisher: "", date: "" } };
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const main = document.getElementById("main");
 const input = document.getElementById("q");
@@ -1057,6 +1078,23 @@ function evidenceMix(vp) {
   const counts = new Map();
   for (const s of vp.sources) counts.set(materialOf(s), (counts.get(materialOf(s)) || 0) + 1);
   return MATERIAL_ORDER.filter(m => counts.has(m)).map(m => `${counts.get(m)} ${m.toLowerCase()}`).join(" · ");
+}
+/* Source filters: they narrow the list on screen only. Citation numbers stay tied to the
+   viewpoint's own order, so [2] is the same source whether or not a filter is on. */
+function clearFilters() { state.filters = { publisher: "", date: "" }; }
+function filtersActive() { return !!(state.filters.publisher || state.filters.date); }
+function sourceYear(s) { return typeof s.date === "string" && /^\d{4}/.test(s.date) ? s.date.slice(0, 4) : ""; }
+function filterOptions(vp) {
+  const publishers = [...new Set(vp.sources.map(s => (typeof s.publisher === "string" ? s.publisher.trim() : "")).filter(Boolean))].sort();
+  const years = [...new Set(vp.sources.map(sourceYear).filter(Boolean))].sort().reverse();
+  return { publishers, years, hasUndated: vp.sources.some(s => !sourceYear(s)) };
+}
+function matchesFilters(s) {
+  const f = state.filters;
+  if (f.publisher && (typeof s.publisher !== "string" || s.publisher.trim() !== f.publisher)) return false;
+  if (f.date === "none") return !sourceYear(s);
+  if (f.date) return !!sourceYear(s) && sourceYear(s) >= f.date;
+  return true;
 }
 function conflictsOf(topic) {
   const ids = new Set(topic.viewpoints.map(v => v.id));
@@ -1171,9 +1209,35 @@ function renderSingle(t) {
       <span class="legend">${vp.sources.length} retrieved · ${avail} available</span>
     </div>
     ${renderSignalsNote()}
+    ${renderFilters(vp)}
     <ol class="source-list">
-      ${vp.sources.map((s, i) => renderSource(s, i + 1)).join("")}
-    </ol>`;
+      ${vp.sources.map((s, i) => ({ s, n: i + 1 })).filter(({ s }) => matchesFilters(s)).map(({ s, n }) => renderSource(s, n)).join("")}
+    </ol>
+    ${vp.sources.some(matchesFilters) ? "" : `<p class="filter-empty">No sources match these filters.
+      <button class="btn btn-quiet" type="button" data-filter-clear>Clear filters</button></p>`}`;
+}
+
+function renderFilters(vp) {
+  const opts = filterOptions(vp);
+  const shown = vp.sources.filter(matchesFilters).length;
+  return `
+    <div class="source-filters" role="group" aria-label="Filter sources">
+      <label class="filter-field"><span>Publisher</span>
+        <select data-filter="publisher">
+          <option value="">All publishers</option>
+          ${opts.publishers.map(p => `<option value="${esc(p)}"${state.filters.publisher === p ? " selected" : ""}>${esc(p)}</option>`).join("")}
+        </select>
+      </label>
+      <label class="filter-field"><span>Date</span>
+        <select data-filter="date">
+          <option value="">Any date</option>
+          ${opts.years.map(y => `<option value="${esc(y)}"${state.filters.date === y ? " selected" : ""}>${esc(y)} or later</option>`).join("")}
+          ${opts.hasUndated ? `<option value="none"${state.filters.date === "none" ? " selected" : ""}>No date</option>` : ""}
+        </select>
+      </label>
+      <span class="filter-count">${filtersActive() ? `Showing ${shown} of ${vp.sources.length}` : `${vp.sources.length} source${vp.sources.length === 1 ? "" : "s"}`}</span>
+      ${filtersActive() ? `<button class="btn btn-quiet" type="button" data-filter-clear>Clear filters</button>` : ""}
+    </div>`;
 }
 
 function renderSource(s, n) {
@@ -1332,6 +1396,7 @@ function search(q) {
     const ambiguous = !!top && top.phrase < 100 && !!ranked[1] && ranked[1].score >= top.score * 0.5;
     state.choices = ambiguous ? ranked.slice(0, 4).map(r => r.topic) : [];
     const topic = ambiguous ? null : (top ? top.topic : null);
+    clearFilters();
     state.topic = topic;
     state.selectedId = topic && topic.viewpoints[0] ? topic.viewpoints[0].id : null;
     state.mode = "single";
@@ -1347,6 +1412,7 @@ function selectTopic(id) {
   state.choices = [];
   state.selectedId = topic.viewpoints[0] ? topic.viewpoints[0].id : null;
   state.mode = "single";
+  clearFilters();
   render();
 }
 
@@ -1375,26 +1441,48 @@ document.addEventListener("click", e => {
   const choice = e.target.closest("[data-topic]");
   if (choice) { selectTopic(choice.dataset.topic); return; }
 
+  const clear = e.target.closest("[data-filter-clear]");
+  if (clear) {
+    clearFilters(); render();
+    const publisher = main.querySelector('[data-filter="publisher"]');
+    if (publisher) publisher.focus();
+    return;
+  }
+
   const rail = e.target.closest("[data-vp].rail-item");
-  if (rail) { state.selectedId = rail.dataset.vp; state.mode = "single"; render(); return; }
+  if (rail) { state.selectedId = rail.dataset.vp; state.mode = "single"; clearFilters(); render(); return; }
 
   const mode = e.target.closest("[data-mode]");
   if (mode) { state.mode = mode.dataset.mode; render(); return; }
 
   const browse = e.target.closest("[data-browse]");
-  if (browse) { state.selectedId = browse.dataset.browse; state.mode = "single"; render(); return; }
+  if (browse) { state.selectedId = browse.dataset.browse; state.mode = "single"; clearFilters(); render(); return; }
 
   const cite = e.target.closest("[data-cite]");
   if (cite) {
     const n = cite.dataset.cite;
     const owner = cite.closest("[data-vp]");
     if (state.mode === "all" && owner) {
-      state.selectedId = owner.dataset.vp; state.mode = "single"; render();
+      state.selectedId = owner.dataset.vp; state.mode = "single"; clearFilters(); render();
+      window.requestAnimationFrame(() => goToSource(n));
+    } else if (!document.getElementById(`src-${n}`) && filtersActive()) {
+      /* The cited source is hidden by a filter: show it again rather than doing nothing. */
+      clearFilters(); render();
       window.requestAnimationFrame(() => goToSource(n));
     } else {
       goToSource(n);
     }
   }
+});
+
+/* Filter menus re-render the pane, so put focus back on the menu that was just used. */
+document.addEventListener("change", e => {
+  const filter = e.target.closest("[data-filter]");
+  if (!filter) return;
+  state.filters[filter.dataset.filter] = filter.value;
+  render();
+  const again = main.querySelector(`[data-filter="${filter.dataset.filter}"]`);
+  if (again) again.focus();
 });
 
 /* ---------- first paint: open with a worked example ---------- */
