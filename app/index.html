@@ -391,6 +391,13 @@
     font-size: 13.5px;
     color: var(--warn);
   }
+  .evidence-mix {
+    margin: 10px 0 0;
+    font-size: 13.5px;
+    color: var(--ink-2);
+  }
+  .evidence-mix strong { color: var(--ink); font-weight: 600; }
+  .evidence-mix .mix-note { display: block; font-size: 12.5px; margin-top: 2px; }
 
   .sources-head {
     display: flex;
@@ -450,6 +457,14 @@
   }
   .source-meta .date { font-family: var(--mono); font-size: 12.5px; }
   .source-meta .nodate { color: var(--ink-3); font-style: italic; }
+  .source-meta .material {
+    display: inline-block;
+    padding: 0 7px;
+    border: 1px solid var(--line-strong);
+    border-radius: 999px;
+    font-size: 12px;
+    color: var(--ink-2);
+  }
   .source details { margin-top: 8px; }
   .source summary {
     cursor: pointer;
@@ -856,6 +871,20 @@ const SIGNAL_FIELDS = [
     meaning: "How clearly the source shows its data, methods or references." }
 ];
 
+/* Fact-versus-opinion labeling: the kind of material a source is, derived from the source type
+   above. It describes the material, never whether a claim in it is true. */
+const MATERIAL_BY_SOURCE_TYPE = {
+  "Academic or educational institution": "Research",
+  "Government or public institution": "Research",
+  "Research organization": "Research",
+  "Industry publication": "Reporting",
+  "News organization": "Reporting",
+  "Policy organization": "Reporting",
+  "Professional organization": "Reporting",
+  "Opinion or commentary source": "Opinion"
+};
+const MATERIAL_ORDER = ["Research", "Reporting", "Opinion", NOT_ASSESSED];
+
 /* ---------- state ---------- */
 const state = { query: "", topic: null, selectedId: null, mode: "single" };
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -908,6 +937,14 @@ function credibilityOf(source) {
   }
   signals.rationale = typeof raw.rationale === "string" ? raw.rationale.trim() : "";
   return signals;
+}
+function materialOf(source) {
+  return MATERIAL_BY_SOURCE_TYPE[credibilityOf(source).sourceType] || NOT_ASSESSED;
+}
+function evidenceMix(vp) {
+  const counts = new Map();
+  for (const s of vp.sources) counts.set(materialOf(s), (counts.get(materialOf(s)) || 0) + 1);
+  return MATERIAL_ORDER.filter(m => counts.has(m)).map(m => `${counts.get(m)} ${m.toLowerCase()}`).join(" · ");
 }
 function warnOnUnknownSignals() {
   for (const t of TOPICS) for (const v of t.viewpoints) v.sources.forEach((s, i) => {
@@ -987,6 +1024,8 @@ function renderSingle(t) {
         <span class="hint">Generated from the sources below. Numbers link to each source.</span>
       </div>
       <p>${renderSummary(vp.summary)}</p>
+      <p class="evidence-mix"><strong>Source material:</strong> ${esc(evidenceMix(vp))}
+        <span class="mix-note">Labels describe the kind of source, not whether a claim is true.</span></p>
       ${avail <= 1 ? `<p class="single-source">${avail === 0 ? "None of the sources behind this summary can currently be opened." : "This summary rests on a single available source. Read it before relying on the summary."}</p>` : ""}
     </div>
     <div class="sources-head">
@@ -1006,7 +1045,7 @@ function renderSource(s, n) {
       <span class="source-num">[${n}]</span>
       <div>
         <p class="source-title">${esc(s.title)}${s.available ? "" : `<span class="badge">Unavailable</span>`}</p>
-        <p class="source-meta">${esc(s.publisher)} · ${date ? `<span class="date">${date}</span>` : `<span class="nodate">Date unavailable</span>`}</p>
+        <p class="source-meta">${esc(s.publisher)} · ${date ? `<span class="date">${date}</span>` : `<span class="nodate">Date unavailable</span>`} · <span class="material">${esc(materialOf(s))}</span></p>
         ${renderSignals(s, n)}
         ${s.excerpt ? `
         <details>
