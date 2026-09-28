@@ -4,8 +4,9 @@ Single-file, no-build prototype of the Version 1 row of the Team 2 feature board
 Open `index.html` in any browser. No server, no dependencies, no API keys.
 Google Fonts load when online; the page falls back to system fonts offline.
 
-Since v1.0 the living prototype also shows **Source credibility signals** on every source
-(see below). The frozen copy in `releases/v1/` does not include them.
+Since v1.0 the living prototype has moved on from the Version 1 row: it also shows
+**Source credibility signals** on every source, and the Version 2 "deeper analysis" work
+described below. The frozen copy in `releases/v1/` includes none of it.
 
 ## What it covers
 
@@ -60,6 +61,26 @@ What the signals are, and are not:
   field, or a label outside the lists above shows as "Not assessed"; a missing rationale says so
   instead of showing a blank.
 
+## Version 2: deeper analysis
+
+Four stories from the Version 2 row, added after v1.0 and not in `releases/v1/`:
+
+| Story | Where you see it | Where the values come from |
+|---|---|---|
+| Source counts per viewpoint | Under each title in the viewpoint rail: "3 sources · 3 available" | Counted from the sample data |
+| Fact-versus-opinion labeling | A **Research**, **Reporting** or **Opinion** label on every source line, and a "Source material" line under each summary and in each compare column | Derived from the source's `credibility.sourceType` (`MATERIAL_BY_SOURCE_TYPE` in the script) |
+| Conflicting-evidence detection | "Conflicting evidence" under a summary, and "Where these viewpoints disagree" above the compare columns | Hand-written `conflicts` on each topic, plus publishers cited under more than one viewpoint, which is computed |
+| Side-by-side compare | "All summaries" lays the viewpoints out in columns, stacking on narrow screens | Layout only |
+
+Limits worth keeping in mind:
+
+- The labels describe the kind of source, never whether a claim is true. There is still no score.
+- Fact-versus-opinion is labelled per source, not per sentence, so the prototype never invents a
+  judgement about an individual claim.
+- Conflicts are sample metadata written for this prototype, tagged "Sample data" in the UI. Nothing
+  detects disagreement by reading the sources.
+- A topic with one viewpoint shows no conflicts, which is the honest result rather than a filler.
+
 ## Demo script
 
 Each sample topic is built to show a different state:
@@ -88,6 +109,8 @@ has recognition and authority marked Not assessed.
 - Source credibility signals (source type, recognition, subject-matter authority, evidence
   transparency and rationale) are hand-written sample metadata. No service assesses or verifies
   sources.
+- Conflicts between viewpoints are hand-written sample metadata too. Nothing reads the sources to
+  detect disagreement.
 - Search is a keyword match against the `keywords` list on each topic in `index.html`.
 - The 350 ms "Searching sources…" delay is simulated.
 
@@ -97,6 +120,7 @@ Edit the `TOPICS` array at the top of the `<script>` block in `index.html`. Each
 
 ```
 { id, title, keywords: [...],
+  conflicts: [ { between: [viewpointId, viewpointId], point, note } ],
   viewpoints: [ { id, title, summary, sources: [ { title, publisher, date | null, url, available, excerpt,
     credibility: { sourceType, recognition, authority, evidenceTransparency, rationale } } ] } ] }
 ```
@@ -111,9 +135,16 @@ unknown label is reported as a console warning when the page loads.
 Notices trigger automatically: one viewpoint, or 3 or fewer reachable sources
 (`LIMITED_EVIDENCE_MAX` in the script).
 
-## Out of scope (Version 2 on the board)
+`conflicts` is optional. Each entry needs `between` with exactly two different viewpoint ids from
+the same topic and a non-empty `point`; `note` is optional. Entries that do not match are ignored,
+so a typo in an id hides that conflict instead of breaking the page. The "Research / Reporting /
+Opinion" label follows `credibility.sourceType`, so add new source types to
+`MATERIAL_BY_SOURCE_TYPE` or they show as "Not assessed".
 
-Full-question search, URL input, keyword disambiguation, filters by date or publisher,
-source counts per viewpoint, subtopics, expanded reasoning, fact-versus-opinion labeling,
-"last updated", side-by-side compare, conflicting-evidence detection, bookmarks, sharing,
-reporting, recent searches.
+## Still out of scope (rest of the Version 2 row)
+
+Full-question search, URL input, keyword disambiguation, filters by date or publisher, subtopics,
+expanded reasoning, "last updated", bookmarks, sharing, reporting, recent searches.
+
+Bookmarks, sharing and recent searches need browser storage or URL state, which the team has not
+decided on yet.

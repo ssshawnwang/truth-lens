@@ -308,6 +308,14 @@
     color: var(--warn);
     margin-top: 4px;
   }
+  .rail-item .rail-count {
+    display: block;
+    font-family: var(--sans);
+    font-size: 12.5px;
+    font-weight: 400;
+    color: var(--ink-2);
+    margin-top: 4px;
+  }
 
   /* ---------- Detail pane ---------- */
   .detail {
@@ -383,6 +391,39 @@
     font-size: 13.5px;
     color: var(--warn);
   }
+  .evidence-mix {
+    margin: 10px 0 0;
+    font-size: 13.5px;
+    color: var(--ink-2);
+  }
+  .evidence-mix strong { color: var(--ink); font-weight: 600; }
+  .evidence-mix .mix-note { display: block; font-size: 12.5px; margin-top: 2px; }
+
+  /* ---------- Conflicting evidence ---------- */
+  .conflicts {
+    margin: 18px 0 0;
+    padding: 12px 14px;
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--line-strong);
+    border-radius: 6px;
+    background: var(--surface-2);
+    max-width: 70ch;
+  }
+  .conflicts-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 8px;
+    margin: 0 0 8px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .conflict-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+  .conflict-point { margin: 0; font-size: 14px; font-weight: 600; }
+  .conflict-between { margin: 2px 0 0; font-size: 12.5px; color: var(--ink-2); }
+  .conflict-note { margin: 2px 0 0; font-size: 13.5px; color: var(--ink-2); max-width: 62ch; }
+  .conflict-shared { margin: 10px 0 0; font-size: 13px; color: var(--ink-2); }
+  .conflicts .btn-quiet { margin-top: 12px; }
 
   .sources-head {
     display: flex;
@@ -442,6 +483,14 @@
   }
   .source-meta .date { font-family: var(--mono); font-size: 12.5px; }
   .source-meta .nodate { color: var(--ink-3); font-style: italic; }
+  .source-meta .material {
+    display: inline-block;
+    padding: 0 7px;
+    border: 1px solid var(--line-strong);
+    border-radius: 999px;
+    font-size: 12px;
+    color: var(--ink-2);
+  }
   .source details { margin-top: 8px; }
   .source summary {
     cursor: pointer;
@@ -536,12 +585,23 @@
   }
 
   /* ---------- All-summaries mode ---------- */
-  .all-list { display: grid; gap: 22px; }
-  .all-item { padding-bottom: 22px; border-bottom: 1px solid var(--line); }
-  .all-item:last-child { border-bottom: 0; padding-bottom: 0; }
-  .all-item h2 { font-size: 22px; margin-bottom: 10px; }
+  .all-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+    gap: 18px;
+    align-items: start;
+  }
+  .all-item {
+    padding: 16px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    min-width: 0;
+  }
+  .all-item h2 { font-size: 20px; margin-bottom: 10px; }
   .all-item .summary { padding: 14px 16px; }
-  .all-item .browse { margin-top: 10px; }
+  .all-item .evidence-mix { margin-top: 12px; }
+  .all-item .all-counts { margin: 8px 0 0; font-size: 13px; color: var(--ink-2); }
+  .all-item .browse { margin-top: 12px; }
 
   /* ---------- Empty state ---------- */
   .empty {
@@ -621,6 +681,14 @@ const TOPICS = [
     id: "nuclear",
     title: "Nuclear energy",
     keywords: ["nuclear", "nuclear energy", "nuclear power", "atomic energy", "reactor", "reactors"],
+    conflicts: [
+      { between: ["nuclear-lowcarbon", "nuclear-slow"],
+        point: "Whether new reactors can be built fast enough to matter",
+        note: "One viewpoint points to two countries that cut power-sector emissions in under fifteen years with nuclear; the other counts recent projects where none entered service within two years of its original date." },
+      { between: ["nuclear-lowcarbon", "nuclear-waste"],
+        point: "Whether unresolved waste storage should weigh against new build",
+        note: "One viewpoint treats extending existing plants as one of the cheapest carbon cuts available; the other stresses that most countries still have no operating permanent repository." }
+    ],
     viewpoints: [
       {
         id: "nuclear-lowcarbon",
@@ -681,6 +749,11 @@ const TOPICS = [
     id: "remote-work",
     title: "Remote work and productivity",
     keywords: ["remote work", "remote", "work from home", "working from home", "wfh", "hybrid work", "telework", "remote productivity"],
+    conflicts: [
+      { between: ["remote-productive", "remote-collab"],
+        point: "Whether remote teams lose more in mentoring than they gain in output",
+        note: "Both viewpoints cite The Foundry Report: one for teams performing about the same when goals are written down, the other for new hires receiving about half as much unscheduled feedback." }
+    ],
     viewpoints: [
       {
         id: "remote-productive",
@@ -744,6 +817,11 @@ const TOPICS = [
     id: "four-day-week",
     title: "The four-day work week",
     keywords: ["four-day", "four day", "4-day", "4 day", "four-day week", "four-day work week", "shorter work week", "32-hour week"],
+    conflicts: [
+      { between: ["fourday-works", "fourday-selection"],
+        point: "Whether pilot results carry over to other workplaces",
+        note: "One viewpoint reports revenue holding steady across 33 pilot companies; the other notes those companies were smaller, younger and more likely to be in knowledge work than the economy as a whole." }
+    ],
     viewpoints: [
       {
         id: "fourday-works",
@@ -781,6 +859,11 @@ const TOPICS = [
     id: "ai-hiring",
     title: "AI in hiring",
     keywords: ["ai hiring", "ai in hiring", "hiring algorithm", "hiring algorithms", "resume screening", "automated hiring", "ai recruiting", "algorithmic hiring", "ai screening"],
+    conflicts: [
+      { between: ["aihire-consistent", "aihire-bias"],
+        point: "Whether applying the same criteria every time makes screening fairer",
+        note: "One viewpoint treats a model that never varies as an improvement on screeners who agreed about 60 percent of the time; the other notes that one biased model then affects every candidate the company sees." }
+    ],
     viewpoints: [
       {
         id: "aihire-consistent",
@@ -848,6 +931,20 @@ const SIGNAL_FIELDS = [
     meaning: "How clearly the source shows its data, methods or references." }
 ];
 
+/* Fact-versus-opinion labeling: the kind of material a source is, derived from the source type
+   above. It describes the material, never whether a claim in it is true. */
+const MATERIAL_BY_SOURCE_TYPE = {
+  "Academic or educational institution": "Research",
+  "Government or public institution": "Research",
+  "Research organization": "Research",
+  "Industry publication": "Reporting",
+  "News organization": "Reporting",
+  "Policy organization": "Reporting",
+  "Professional organization": "Reporting",
+  "Opinion or commentary source": "Opinion"
+};
+const MATERIAL_ORDER = ["Research", "Reporting", "Opinion", NOT_ASSESSED];
+
 /* ---------- state ---------- */
 const state = { query: "", topic: null, selectedId: null, mode: "single" };
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -901,6 +998,39 @@ function credibilityOf(source) {
   signals.rationale = typeof raw.rationale === "string" ? raw.rationale.trim() : "";
   return signals;
 }
+function materialOf(source) {
+  return MATERIAL_BY_SOURCE_TYPE[credibilityOf(source).sourceType] || NOT_ASSESSED;
+}
+function evidenceMix(vp) {
+  const counts = new Map();
+  for (const s of vp.sources) counts.set(materialOf(s), (counts.get(materialOf(s)) || 0) + 1);
+  return MATERIAL_ORDER.filter(m => counts.has(m)).map(m => `${counts.get(m)} ${m.toLowerCase()}`).join(" · ");
+}
+function conflictsOf(topic) {
+  const ids = new Set(topic.viewpoints.map(v => v.id));
+  return (Array.isArray(topic.conflicts) ? topic.conflicts : []).filter(c =>
+    c && Array.isArray(c.between) && c.between.length === 2 && c.between[0] !== c.between[1] &&
+    c.between.every(id => ids.has(id)) && typeof c.point === "string" && c.point.trim());
+}
+function viewpointTitle(topic, id) {
+  const vp = topic.viewpoints.find(v => v.id === id);
+  return vp ? vp.title : "";
+}
+/* A publisher cited under more than one viewpoint of the same topic: the same evidence
+   is being read in different ways, which is worth showing next to the conflicts. */
+function sharedPublishers(topic) {
+  const counts = new Map();
+  for (const v of topic.viewpoints) {
+    const seen = new Set();
+    for (const s of v.sources) {
+      const publisher = typeof s.publisher === "string" ? s.publisher.trim() : "";
+      if (!publisher || seen.has(publisher)) continue;
+      seen.add(publisher);
+      counts.set(publisher, (counts.get(publisher) || 0) + 1);
+    }
+  }
+  return [...counts].filter(([, n]) => n > 1).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+}
 function warnOnUnknownSignals() {
   for (const t of TOPICS) for (const v of t.viewpoints) v.sources.forEach((s, i) => {
     for (const f of SIGNAL_FIELDS) {
@@ -947,6 +1077,7 @@ function render() {
           ${t.viewpoints.map(v => `
             <li><button class="rail-item" type="button" data-vp="${v.id}" aria-current="${v.id === state.selectedId}">
               ${esc(v.title)}
+              <span class="rail-count">${v.sources.length} source${v.sources.length === 1 ? "" : "s"} · ${availableCount(v)} available</span>
               ${availableCount(v) <= 1 ? `<small>Rests on ${availableCount(v) === 0 ? "no" : "a single"} available source</small>` : ""}
             </button></li>`).join("")}
         </ul>
@@ -978,8 +1109,11 @@ function renderSingle(t) {
         <span class="hint">Generated from the sources below. Numbers link to each source.</span>
       </div>
       <p>${renderSummary(vp.summary)}</p>
+      <p class="evidence-mix"><strong>Source material:</strong> ${esc(evidenceMix(vp))}
+        <span class="mix-note">Labels describe the kind of source, not whether a claim is true.</span></p>
       ${avail <= 1 ? `<p class="single-source">${avail === 0 ? "None of the sources behind this summary can currently be opened." : "This summary rests on a single available source. Read it before relying on the summary."}</p>` : ""}
     </div>
+    ${renderViewpointConflicts(t, vp)}
     <div class="sources-head">
       <h3>Sources behind this viewpoint</h3>
       <span class="legend">${vp.sources.length} retrieved · ${avail} available</span>
@@ -997,7 +1131,7 @@ function renderSource(s, n) {
       <span class="source-num">[${n}]</span>
       <div>
         <p class="source-title">${esc(s.title)}${s.available ? "" : `<span class="badge">Unavailable</span>`}</p>
-        <p class="source-meta">${esc(s.publisher)} · ${date ? `<span class="date">${date}</span>` : `<span class="nodate">Date unavailable</span>`}</p>
+        <p class="source-meta">${esc(s.publisher)} · ${date ? `<span class="date">${date}</span>` : `<span class="nodate">Date unavailable</span>`} · <span class="material">${esc(materialOf(s))}</span></p>
         ${renderSignals(s, n)}
         ${s.excerpt ? `
         <details>
@@ -1048,8 +1182,44 @@ function renderSignalsNote() {
     </div>`;
 }
 
+function renderConflicts(t) {
+  const conflicts = conflictsOf(t);
+  const shared = sharedPublishers(t);
+  if (!conflicts.length && !shared.length) return "";
+  return `
+    <div class="conflicts">
+      <p class="conflicts-head">Where these viewpoints disagree <span class="sample-tag">Sample data</span></p>
+      ${conflicts.length ? `<ul class="conflict-list">
+        ${conflicts.map(c => `<li>
+          <p class="conflict-point">${esc(c.point)}</p>
+          <p class="conflict-between">${esc(viewpointTitle(t, c.between[0]))} — ${esc(viewpointTitle(t, c.between[1]))}</p>
+          ${typeof c.note === "string" && c.note.trim() ? `<p class="conflict-note">${esc(c.note)}</p>` : ""}
+        </li>`).join("")}
+      </ul>` : `<p class="conflict-note">No disagreement between these viewpoints is recorded in the sample data.</p>`}
+      ${shared.length ? `<p class="conflict-shared">Cited under more than one viewpoint: ${shared.map(([publisher, n]) => `${esc(publisher)} (${n} viewpoints)`).join(", ")}.</p>` : ""}
+    </div>`;
+}
+
+function renderViewpointConflicts(t, vp) {
+  const list = conflictsOf(t).filter(c => c.between.includes(vp.id));
+  if (!list.length) return "";
+  return `
+    <div class="conflicts">
+      <p class="conflicts-head">Conflicting evidence <span class="sample-tag">Sample data</span></p>
+      <ul class="conflict-list">
+        ${list.map(c => `<li>
+          <p class="conflict-point">${esc(c.point)}</p>
+          <p class="conflict-between">Disagrees with “${esc(viewpointTitle(t, c.between.find(id => id !== vp.id)))}”</p>
+          ${typeof c.note === "string" && c.note.trim() ? `<p class="conflict-note">${esc(c.note)}</p>` : ""}
+        </li>`).join("")}
+      </ul>
+      <button class="btn btn-quiet" type="button" data-mode="all">Compare side by side</button>
+    </div>`;
+}
+
 function renderAll(t) {
-  return `<div class="all-list">
+  return `${renderConflicts(t)}
+    <div class="all-list">
     ${t.viewpoints.map(v => `
       <article class="all-item">
         <h2>${esc(v.title)}</h2>
@@ -1057,6 +1227,8 @@ function renderAll(t) {
           <div class="summary-head"><p class="eyebrow">AI summary</p></div>
           <p data-vp="${v.id}">${renderSummary(v.summary)}</p>
         </div>
+        <p class="evidence-mix"><strong>Source material:</strong> ${esc(evidenceMix(v))}</p>
+        <p class="all-counts">${availableCount(v)} of ${v.sources.length} source${v.sources.length === 1 ? "" : "s"} available</p>
         <button class="btn btn-quiet browse" type="button" data-browse="${v.id}">Browse ${v.sources.length} source${v.sources.length === 1 ? "" : "s"} →</button>
       </article>`).join("")}
   </div>`;
