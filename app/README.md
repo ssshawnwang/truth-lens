@@ -23,7 +23,7 @@ Every sticky in the Version 1 row maps to something you can click:
 | Browse Viewpoint Sources   | Browse a source list for each viewpoint           | "Sources behind this viewpoint" under the summary                               |
 | Browse Viewpoint Sources   | See when a source is unavailable                  | Red "Unavailable" badge and a plain-language reason in place of the link        |
 | Browse Viewpoint Sources   | View source titles, publishers, and available dates | Title line and "Publisher · date" line; missing dates show "Date unavailable" |
-| Read Original Content      | Open original source links                        | "Open original source" button (opens a placeholder page in a new tab)           |
+| Read Original Content      | Open original source links                        | "Open source record" button (see "Opening a source" below); a real web address would open in a new tab |
 | Read Original Content      | Read source excerpts behind each viewpoint        | "Read excerpt" disclosure on each source                                        |
 | Review Uncertainty         | See when only one viewpoint is found              | Amber notice above the results                                                  |
 | Review Uncertainty         | See when the available evidence is limited        | Amber notice above the results, plus a per-viewpoint note in the rail           |
@@ -81,6 +81,26 @@ Limits worth keeping in mind:
   detects disagreement by reading the sources.
 - A topic with one viewpoint shows no conflicts, which is the honest result rather than a filler.
 
+## Opening a source
+
+Every source used to offer "Open original source", which went to an `example.com` placeholder and
+landed on a 404 page. For a product whose promise is "check the sources", a dead link is the worst
+place to be vague, so the button no longer pretends:
+
+- **Placeholder address (all of today's sample data):** the button reads "Open source record" and
+  opens a dialog with everything the prototype actually holds about that source: publisher, date,
+  material type, the full excerpt, the credibility signals with their rationale, and the stored
+  address. A notice at the top states plainly that no page was retrieved.
+- **A real `http`/`https` address:** the old behaviour returns automatically. The source shows
+  "Open original source" and opens the page in a new tab, so nothing has to change here when
+  Version 2 starts retrieving real sources.
+- **Anything else** (`javascript:`, `data:`, a malformed address): treated as a placeholder and
+  never turned into a link. This also closes security card SEC-04 for this sink.
+
+The dialog is a native `<dialog>`: Escape closes it, focus moves into it and returns to the button
+that opened it, and clicking the backdrop closes it. Unavailable sources are unchanged: they still
+show the "could not be reached" message and no button.
+
 ## Demo script
 
 Each sample topic is built to show a different state:
@@ -104,7 +124,8 @@ has recognition and authority marked Not assessed.
 ## What is mocked
 
 - All topics, viewpoints, summaries, sources, publishers and excerpts are sample data
-  written for this prototype. Publishers are fictional. Links go to `example.com`.
+  written for this prototype. Publishers are fictional, and the stored addresses are
+  `example.com` placeholders that answer 404, so nothing links out (see "Opening a source").
 - "AI summary" text is hand-written. Nothing calls a model.
 - Source credibility signals (source type, recognition, subject-matter authority, evidence
   transparency and rationale) are hand-written sample metadata. No service assesses or verifies

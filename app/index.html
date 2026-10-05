@@ -584,6 +584,41 @@
     .signal-list { grid-template-columns: 1fr; }
   }
 
+  /* ---------- Sample source record ---------- */
+  .source-dialog {
+    width: min(620px, calc(100vw - 32px));
+    padding: 0;
+    border: 1px solid var(--line-strong);
+    border-radius: 8px;
+    background: var(--surface);
+    color: var(--ink);
+  }
+  .source-dialog::backdrop { background: rgba(22, 32, 30, 0.5); }
+  .record { padding: 20px 22px 22px; }
+  .record h2 {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: 22px;
+    line-height: 1.25;
+    margin: 0 0 4px;
+    max-width: 34ch;
+  }
+  .record-meta { margin: 0 0 14px; font-size: 13.5px; color: var(--ink-2); }
+  .record .notice { margin-bottom: 4px; }
+  .record h3 { font-size: 13px; font-weight: 600; margin: 18px 0 6px; }
+  .record blockquote {
+    margin: 0;
+    padding: 8px 0 8px 14px;
+    border-left: 2px solid var(--line-strong);
+    color: var(--ink-2);
+    font-family: var(--serif);
+    font-size: 16px;
+    line-height: 1.5;
+  }
+  .record-address { margin: 0; font-size: 13px; color: var(--ink-2); }
+  .record-address .mono { font-family: var(--mono); font-size: 12.5px; color: var(--ink); overflow-wrap: anywhere; }
+  .record-actions { margin-top: 20px; display: flex; justify-content: flex-end; }
+
   /* ---------- All-summaries mode ---------- */
   .all-list {
     display: grid;
@@ -665,9 +700,11 @@
 
 <main class="wrap" id="main"></main>
 
+<dialog id="source-record" class="source-dialog" aria-labelledby="record-title"></dialog>
+
 <footer>
   TruthLens prototype, Version 1 (Core Exploration). Every topic, viewpoint, summary, source and credibility signal on this page is sample data written for the prototype.
-  Publishers are fictional and "Open original source" links go to a placeholder page.
+  Publishers are fictional, and no source page is ever fetched: opening a source shows the sample record the prototype stores for it.
 </footer>
 
 <script>
@@ -950,6 +987,7 @@ const state = { query: "", topic: null, selectedId: null, mode: "single" };
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const main = document.getElementById("main");
 const input = document.getElementById("q");
+const sourceDialog = document.getElementById("source-record");
 
 /* ---------- helpers ---------- */
 function esc(s) {
@@ -997,6 +1035,17 @@ function credibilityOf(source) {
   }
   signals.rationale = typeof raw.rationale === "string" ? raw.rationale.trim() : "";
   return signals;
+}
+/* Only a real web address is opened in a new tab. The sample data uses example.com
+   placeholders, which answer 404, so those open the stored record instead of a dead page.
+   Anything that is not http or https is treated the same way. */
+function externalSource(s) {
+  if (!s || typeof s.url !== "string") return null;
+  let url;
+  try { url = new URL(s.url.trim()); } catch (e) { return null; }
+  if (url.protocol !== "http:" && url.protocol !== "https:") return null;
+  if (/(^|\.)example\.(com|org|net)$/i.test(url.hostname)) return null;
+  return url.href;
 }
 function materialOf(source) {
   return MATERIAL_BY_SOURCE_TYPE[credibilityOf(source).sourceType] || NOT_ASSESSED;
@@ -1126,6 +1175,7 @@ function renderSingle(t) {
 
 function renderSource(s, n) {
   const date = fmtDate(s.date);
+  const external = s.available ? externalSource(s) : null;
   return `
     <li class="source ${s.available ? "" : "unavailable"}" id="src-${n}">
       <span class="source-num">[${n}]</span>
@@ -1140,16 +1190,18 @@ function renderSource(s, n) {
         </details>` : ""}
         <div class="source-actions">
           ${s.available
-            ? `<a class="btn btn-quiet" href="${esc(s.url)}" target="_blank" rel="noopener noreferrer">Open original source ↗</a>`
+            ? (external
+                ? `<a class="btn btn-quiet" href="${esc(external)}" target="_blank" rel="noopener noreferrer">Open original source ↗</a>`
+                : `<button class="btn btn-quiet" type="button" data-source="${n}">Open source record</button>`)
             : `<span class="dead">This source could not be reached. The original page may have moved or been removed.</span>`}
         </div>
       </div>
     </li>`;
 }
 
-function renderSignals(s, n) {
+function renderSignals(s, n, idPrefix = "src") {
   const signals = credibilityOf(s);
-  const headId = `src-${n}-signals`;
+  const headId = `${idPrefix}-${n}-signals`;
   return `
         <div class="signals" role="group" aria-labelledby="${headId}">
           <p class="signals-head" id="${headId}">Source credibility signals <span class="sample-tag">Sample data</span></p>
@@ -1180,6 +1232,39 @@ function renderSignalsNote() {
         </dl>
       </details>
     </div>`;
+}
+
+/* The sample source record: everything the prototype actually holds about one source,
+   shown in place of a page it never fetched. */
+function renderSourceRecord(s, n) {
+  const date = fmtDate(s.date);
+  const address = typeof s.url === "string" && s.url.trim() ? s.url.trim() : "";
+  return `
+    <div class="record">
+      <h2 id="record-title">${esc(s.title)}</h2>
+      <p class="record-meta">${esc(s.publisher)} · ${date ? esc(date) : "Date unavailable"} · ${esc(materialOf(s))}</p>
+      <div class="notice" role="status">${WARN_ICON}<div><strong>No page was retrieved.</strong>
+        <p>TruthLens does not fetch source pages yet, so there is nothing to open. Below is the whole sample record the prototype stores for this source.</p></div></div>
+      ${s.excerpt ? `
+      <h3>Excerpt kept with this source</h3>
+      <blockquote>“${esc(s.excerpt)}”</blockquote>` : ""}
+      <h3>Credibility signals</h3>
+      ${renderSignals(s, n, "record")}
+      ${address ? `
+      <h3>Stored address</h3>
+      <p class="record-address"><span class="mono">${esc(address)}</span><br>
+        A placeholder written for the prototype. Once TruthLens retrieves real sources, this is the link that would open the original page.</p>` : ""}
+      <div class="record-actions"><button class="btn btn-quiet" type="button" data-close-record autofocus>Close</button></div>
+    </div>`;
+}
+
+function openSourceRecord(n) {
+  if (!state.topic) return;
+  const vp = state.topic.viewpoints.find(v => v.id === state.selectedId) || state.topic.viewpoints[0];
+  const s = vp && Array.isArray(vp.sources) ? vp.sources[Number(n) - 1] : null;
+  if (!s) return;
+  sourceDialog.innerHTML = renderSourceRecord(s, Number(n));
+  sourceDialog.showModal();
 }
 
 function renderConflicts(t) {
@@ -1297,6 +1382,12 @@ document.addEventListener("click", e => {
   const browse = e.target.closest("[data-browse]");
   if (browse) { state.selectedId = browse.dataset.browse; state.mode = "single"; render(); return; }
 
+  const record = e.target.closest("[data-source]");
+  if (record) { openSourceRecord(record.dataset.source); return; }
+
+  const closeRecord = e.target.closest("[data-close-record]");
+  if (closeRecord) { sourceDialog.close(); return; }
+
   const cite = e.target.closest("[data-cite]");
   if (cite) {
     const n = cite.dataset.cite;
@@ -1309,6 +1400,9 @@ document.addEventListener("click", e => {
     }
   }
 });
+
+/* Clicking the backdrop closes the record. Escape and focus return are handled by <dialog>. */
+sourceDialog.addEventListener("click", e => { if (e.target === sourceDialog) sourceDialog.close(); });
 
 /* ---------- first paint: open with a worked example ---------- */
 warnOnUnknownSignals();
